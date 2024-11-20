@@ -2,6 +2,7 @@ package lat.paba.recyclerview
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -13,12 +14,16 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var _nama : MutableList<String>
-    private lateinit var _deskripsi : MutableList<String>
-    private lateinit var _karakter : MutableList<String>
-    private lateinit var _foto : MutableList<String>
+    private var _nama : MutableList<String> = emptyList<String>().toMutableList()
+    private var _deskripsi : MutableList<String> = emptyList<String>().toMutableList()
+    private var _karakter : MutableList<String> = emptyList<String>().toMutableList()
+    private var _foto : MutableList<String> = emptyList<String>().toMutableList()
+
+    lateinit var sp : SharedPreferences
 
     private var listWayang  = arrayListOf<wayang>()
 
@@ -34,10 +39,30 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        sp = getSharedPreferences("dataSP", MODE_PRIVATE)
+        val gson = Gson()
+        val isiSP = sp.getString("spWayang", null)
+        val type = object : TypeToken<ArrayList<wayang>> () {}.type
+        if (isiSP!=null)
+            listWayang = gson.fromJson(isiSP, type)
+
+        if (listWayang.size == 0) {
+            siapkanData()
+        } else {
+            listWayang.forEach{
+                _nama.add(it.nama)
+                _foto.add(it.foto)
+                _deskripsi.add(it.deskripsi)
+                _karakter.add(it.karakter)
+            }
+            listWayang.clear()
+        }
+
         _rvWayang = findViewById(R.id.rvWayang)
         siapkanData()
         tambahData()
         tampilkanData()
+
     }
 
     fun siapkanData(){
@@ -48,6 +73,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun tambahData(){
+        val gson = Gson()
+        val editor = sp.edit()
         listWayang.clear()
         for (i in _nama.indices){
             val data = wayang(
@@ -58,6 +85,9 @@ class MainActivity : AppCompatActivity() {
             )
             listWayang.add(data)
         }
+        val json = gson.toJson(listWayang)
+        editor.putString("spWayang",json)
+        editor.apply()
     }
 
     fun tampilkanData(){
