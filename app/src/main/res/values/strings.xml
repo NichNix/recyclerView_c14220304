@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">recyclerView</string>
+    <string name="app_name">codelab-recyclerview</string>
 
     <string-array name="namaWayang">
         <item>Bima</item>
